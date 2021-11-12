@@ -5,10 +5,10 @@ pub fn build(b: *Builder) !void {
     const mode = b.standardReleaseOptions();
     const target = b.standardTargetOptions(.{});
 
-    const exe = b.addExecutable("stga", "src/main.zig");
-    exe.setBuildMode(mode);
-    exe.setTarget(target);
-    exe.install();
+    const lib = b.addStaticLibrary("stga", "src/main.zig");
+    lib.setBuildMode(mode);
+    lib.setTarget(target);
+    lib.install();
 
     const testCmd = b.addTest("src/main.zig");
     testCmd.setBuildMode(mode);
