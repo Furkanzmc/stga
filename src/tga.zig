@@ -177,7 +177,7 @@ fn readPixel(dst: []u8, src: []const u8) void {
 }
 
 /// encode encodes the given image as TGA data and writes it to the given output stream.
-/// This can writes a 24- or 32-bit Truecolor image which is optionally RLE-compressed.
+/// This writes a 24- or 32-bit Truecolor image which is optionally RLE-compressed.
 /// The selected bit-depth depends on whether the input image is opaque or not.
 pub fn encode(writer: anytype, img: *const Image, compress: bool) !void {
     const it = @enumToInt(if (compress) ImageType.rleTruecolor else ImageType.uncompressedTruecolor);

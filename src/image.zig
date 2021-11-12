@@ -71,8 +71,9 @@ pub const Image = struct {
         return self;
     }
 
-    /// writeFilepath encodes this image and writes the result to the given file.
-    /// The output is optionally compressed.
+    /// writeFilepath encodes the given image as TGA data and writes it to the given output file.
+    /// This writes a 24- or 32-bit Truecolor image which is optionally RLE-compressed.
+    /// The selected bit-depth depends on whether the input image is opaque or not.
     pub fn writeFilepath(self: *const Image, filepath: []const u8, compressed: bool) !void {
         const resolved = try std.fs.path.resolve(self.allocator, &.{filepath});
         defer self.allocator.free(resolved);
@@ -83,8 +84,9 @@ pub const Image = struct {
         return self.writeStream(fd.writer(), compressed);
     }
 
-    /// writeStream encodes this image and writes the result to the given stream.
-    /// The output is optionally compressed.
+    /// writeStream encodes the given image as TGA data and writes it to the given output stream.
+    /// This writes a 24- or 32-bit Truecolor image which is optionally RLE-compressed.
+    /// The selected bit-depth depends on whether the input image is opaque or not.
     pub fn writeStream(self: *const Image, writer: anytype, compressed: bool) !void {
         try tga.encode(writer, self, compressed);
     }

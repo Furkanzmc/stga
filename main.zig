@@ -1,1 +1,1 @@
-usingnamespace @import("src/main.zig");
+pub usingnamespace @import("src/main.zig");
