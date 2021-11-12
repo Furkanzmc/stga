@@ -13,14 +13,14 @@ to it in your `build.zig` file.
 
 ```zig
     ...
-    exe.addPackagePath("ttga", "libs/ttga/main.zig");
+    exe.addPackagePath("stga", "libs/stga/main.zig");
     ...
 ```
 
 To use the library, add an import statement:
 
 ```zig
-const tga = @import("ttga");
+const tga = @import("stga");
 ```
 
 To read an image from disk.
