@@ -8,14 +8,14 @@ test "" {
 
 /// Image defines a single image with 32-bit, non-alpha-premultiplied RGBA pixel data.
 pub const Image = struct {
-    allocator: *std.mem.Allocator,
+    allocator: std.mem.Allocator,
     pixels: []u8,
     width: usize,
     height: usize,
 
     /// init creates an empty image with the given dimensions.
     /// Asserts that width and height are > 0.
-    pub fn init(allocator: *std.mem.Allocator, width: usize, height: usize) !@This() {
+    pub fn init(allocator: std.mem.Allocator, width: usize, height: usize) !@This() {
         std.debug.assert(width > 0);
         std.debug.assert(height > 0);
         return @This(){
@@ -43,13 +43,13 @@ pub const Image = struct {
     }
 
     /// readData reads image data from the encoded image data.
-    pub fn readData(allocator: *std.mem.Allocator, data: []const u8) !@This() {
+    pub fn readData(allocator: std.mem.Allocator, data: []const u8) !@This() {
         var stream = std.io.fixedBufferStream(data);
         return readStream(allocator, stream.reader());
     }
 
     /// readFilepath reads image data from the given file.
-    pub fn readFilepath(allocator: *std.mem.Allocator, filepath: []const u8) !@This() {
+    pub fn readFilepath(allocator: std.mem.Allocator, filepath: []const u8) !@This() {
         const resolved = try std.fs.path.resolve(allocator, &.{filepath});
         defer allocator.free(resolved);
 
@@ -60,7 +60,7 @@ pub const Image = struct {
     }
 
     /// readStream reads image data from the given reader.
-    pub fn readStream(allocator: *std.mem.Allocator, reader: anytype) !@This() {
+    pub fn readStream(allocator: std.mem.Allocator, reader: anytype) !@This() {
         var self = @This(){
             .allocator = allocator,
             .width = 0,

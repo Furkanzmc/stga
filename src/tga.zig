@@ -1,7 +1,6 @@
 const std = @import("std");
 const expect = std.testing.expect;
-
-usingnamespace @import("image.zig");
+const Image = @import("image.zig").Image;
 
 // ref: https://www.dca.fee.unicamp.br/~martino/disciplinas/ea978/tgaffs.pdf
 // ref: http://www.paulbourke.net/dataformats/tga/
