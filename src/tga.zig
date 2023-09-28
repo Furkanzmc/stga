@@ -5,7 +5,7 @@ const Image = @import("image.zig").Image;
 // ref: https://www.dca.fee.unicamp.br/~martino/disciplinas/ea978/tgaffs.pdf
 // ref: http://www.paulbourke.net/dataformats/tga/
 
-test "" {
+test {
     std.testing.refAllDecls(@This());
     std.testing.refAllDecls(Header);
     std.testing.refAllDecls(ImageType);
@@ -69,14 +69,14 @@ pub fn decode(img: *Image, reader: anytype) !void {
     var hdr = Header{
         .idLen = buf[0],
         .colormapType = buf[1],
-        .imageType = @intToEnum(ImageType, buf[2]),
-        .colormapOffset = @intCast(u16, buf[3]) | (@intCast(u16, buf[4]) << 8),
-        .colormapLength = @intCast(u16, buf[5]) | (@intCast(u16, buf[6]) << 8),
+        .imageType = @as(ImageType, @enumFromInt(buf[2])),
+        .colormapOffset = @as(u16, @intCast(buf[3])) | (@as(u16, @intCast(buf[4])) << 8),
+        .colormapLength = @as(u16, @intCast(buf[5])) | (@as(u16, @intCast(buf[6])) << 8),
         .colormapDepth = buf[7],
-        .imageX = @intCast(u16, buf[8]) | (@intCast(u16, buf[9]) << 8),
-        .imageY = @intCast(u16, buf[10]) | (@intCast(u16, buf[11]) << 8),
-        .imageWidth = @intCast(u16, buf[12]) | (@intCast(u16, buf[13]) << 8),
-        .imageHeight = @intCast(u16, buf[14]) | (@intCast(u16, buf[15]) << 8),
+        .imageX = @as(u16, @intCast(buf[8])) | (@as(u16, @intCast(buf[9])) << 8),
+        .imageY = @as(u16, @intCast(buf[10])) | (@as(u16, @intCast(buf[11])) << 8),
+        .imageWidth = @as(u16, @intCast(buf[12])) | (@as(u16, @intCast(buf[13])) << 8),
+        .imageHeight = @as(u16, @intCast(buf[14])) | (@as(u16, @intCast(buf[15])) << 8),
         .imageDepth = buf[16],
         .imageDescriptor = buf[17],
     };
@@ -89,11 +89,11 @@ pub fn decode(img: *Image, reader: anytype) !void {
     }
 
     // Skip irrelevant stuff.
-    const skip = @intCast(usize, hdr.idLen) + @intCast(usize, hdr.colormapType) *
-        @intCast(usize, hdr.colormapLength) * @intCast(usize, hdr.colormapDepth / 8);
+    const skip = @as(usize, @intCast(hdr.idLen)) + @as(usize, @intCast(hdr.colormapType)) *
+        @as(usize, @intCast(hdr.colormapLength)) * @as(usize, @intCast(hdr.colormapDepth / 8));
     try reader.skipBytes(skip, .{});
 
-    try img.reinit(@intCast(usize, hdr.imageWidth), @intCast(usize, hdr.imageHeight));
+    try img.reinit(@as(usize, @intCast(hdr.imageWidth)), @as(usize, @intCast(hdr.imageHeight)));
     errdefer img.deinit();
 
     switch (hdr.imageType) {
@@ -105,7 +105,7 @@ pub fn decode(img: *Image, reader: anytype) !void {
 }
 
 fn decodeUncompressedTruecolor(img: *Image, hdr: *const Header, reader: anytype) !void {
-    const bytesPerPixel = @intCast(usize, hdr.imageDepth) / 8;
+    const bytesPerPixel = @as(usize, @intCast(hdr.imageDepth)) / 8;
     var buffer: [4]u8 = undefined;
 
     var x: usize = 0;
@@ -117,14 +117,14 @@ fn decodeUncompressedTruecolor(img: *Image, hdr: *const Header, reader: anytype)
 }
 
 fn decodeRLETruecolor(img: *Image, hdr: *const Header, reader: anytype) !void {
-    const bytesPerPixel = @intCast(usize, hdr.imageDepth) / 8;
+    const bytesPerPixel = @as(usize, @intCast(hdr.imageDepth)) / 8;
     var buffer: [5]u8 = undefined;
     var dst: usize = 0;
     var i: usize = 0;
 
     while (dst < img.pixels.len) {
         const packetType = try reader.readByte();
-        const runLength = @intCast(usize, packetType & 0x7f) + 1;
+        const runLength = @as(usize, @intCast(packetType & 0x7f)) + 1;
 
         if ((packetType & 0x80) > 0) { // RLE block
             if ((try reader.readAll(buffer[0..bytesPerPixel])) < bytesPerPixel)
@@ -179,11 +179,11 @@ fn readPixel(dst: []u8, src: []const u8) void {
 /// This writes a 24- or 32-bit Truecolor image which is optionally RLE-compressed.
 /// The selected bit-depth depends on whether the input image is opaque or not.
 pub fn encode(writer: anytype, img: *const Image, compress: bool) !void {
-    const it = @enumToInt(if (compress) ImageType.rleTruecolor else ImageType.uncompressedTruecolor);
-    const wlo = @intCast(u8, img.width & 0xff);
-    const whi = @intCast(u8, (img.width >> 8) & 0xff);
-    const hlo = @intCast(u8, img.height & 0xff);
-    const hhi = @intCast(u8, (img.height >> 8) & 0xff);
+    const it = @intFromEnum(if (compress) ImageType.rleTruecolor else ImageType.uncompressedTruecolor);
+    const wlo = @as(u8, @intCast(img.width & 0xff));
+    const whi = @as(u8, @intCast((img.width >> 8) & 0xff));
+    const hlo = @as(u8, @intCast(img.height & 0xff));
+    const hhi = @as(u8, @intCast((img.height >> 8) & 0xff));
     const depth: u8 = if (img.isOpaque()) 24 else 32;
 
     // write the file header.
@@ -208,8 +208,8 @@ pub fn encode(writer: anytype, img: *const Image, compress: bool) !void {
 fn encodeRLETruecolor(writer: anytype, img: *const Image, depth: u8) !void {
     const RawPacket = 0x00;
     const RLEPacket = 0x80;
-    const bytesPerPixel = @intCast(usize, depth) / 8;
-    const maxRunLen = std.math.min(128, img.width);
+    const bytesPerPixel = @as(usize, @intCast(depth)) / 8;
+    const maxRunLen = @min(128, img.width);
     var packet: [5]u8 = undefined;
     var runLen: usize = 0;
     var i: usize = 0;
@@ -226,7 +226,7 @@ fn encodeRLETruecolor(writer: anytype, img: *const Image, depth: u8) !void {
                 while (getRunLength(img.pixels[ii..], 4, maxRunLen) == 1 and count < maxRunLen) : (ii += 4)
                     count += 1;
 
-                try writer.writeByte(RawPacket | @intCast(u8, (count - 1) & 0x7f));
+                try writer.writeByte(RawPacket | @as(u8, @intCast((count - 1) & 0x7f)));
                 while (i <= ii) : (i += 4) {
                     packet[0] = img.pixels[i + 2];
                     packet[1] = img.pixels[i + 1];
@@ -238,7 +238,7 @@ fn encodeRLETruecolor(writer: anytype, img: *const Image, depth: u8) !void {
                 i -= 4;
             },
             else => {
-                packet[0] = RLEPacket | @intCast(u8, (runLen - 1) & 0x7f);
+                packet[0] = RLEPacket | @as(u8, @intCast((runLen - 1) & 0x7f));
                 packet[1] = img.pixels[i + 2];
                 packet[2] = img.pixels[i + 1];
                 packet[3] = img.pixels[i + 0];
@@ -267,7 +267,7 @@ fn getRunLength(data: []const u8, pixelSize: usize, max: usize) usize {
 }
 
 fn encodeUncompressedTruecolor(writer: anytype, img: *const Image, depth: u8) !void {
-    const bytesPerPixel = @intCast(usize, depth) / 8;
+    const bytesPerPixel = @as(usize, @intCast(depth)) / 8;
     var pixel: [4]u8 = undefined;
     var i: usize = 0;
     while (i < img.pixels.len) : (i += 4) {

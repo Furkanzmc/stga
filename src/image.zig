@@ -1,7 +1,7 @@
 const std = @import("std");
 const tga = @import("tga.zig");
 
-test "" {
+test {
     std.testing.refAllDecls(@This());
     std.testing.refAllDecls(Image);
 }
@@ -18,6 +18,7 @@ pub const Image = struct {
     pub fn init(allocator: std.mem.Allocator, width: usize, height: usize) !@This() {
         std.debug.assert(width > 0);
         std.debug.assert(height > 0);
+
         return @This(){
             .allocator = allocator,
             .width = width,
@@ -36,6 +37,7 @@ pub const Image = struct {
     pub fn reinit(self: *@This(), width: usize, height: usize) !void {
         std.debug.assert(width > 0);
         std.debug.assert(height > 0);
+
         self.deinit();
         self.width = width;
         self.height = height;
@@ -101,7 +103,7 @@ pub const Image = struct {
     /// set sets the pixel at the given coordinate to the specified value.
     /// Asserts that the given coordinate is valid.
     /// Asserts that pixel.len >= 4.
-    pub inline fn set(self: *const @This(), x: usize, y: usize, pixel: []u8) void {
+    pub inline fn set(self: *const @This(), x: usize, y: usize, pixel: []const u8) void {
         std.debug.assert(pixel.len >= 4);
         std.mem.copy(u8, self.pixels[self.offset(x, y)..], pixel[0..4]);
     }
