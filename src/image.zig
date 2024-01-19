@@ -105,7 +105,7 @@ pub const Image = struct {
     /// Asserts that pixel.len >= 4.
     pub inline fn set(self: *const @This(), x: usize, y: usize, pixel: []const u8) void {
         std.debug.assert(pixel.len >= 4);
-        std.mem.copy(u8, self.pixels[self.offset(x, y)..], pixel[0..4]);
+        std.mem.copyForwards(u8, self.pixels[self.offset(x, y)..], pixel[0..4]);
     }
 
     /// offset returns the pixel offset for the given x/y coordinate.
